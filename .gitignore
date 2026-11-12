@@ -1,0 +1,37 @@
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Machine learning data
+ml-engine/data/raw/
+ml-engine/data/processed/
+ml-engine/outputs/
+*.pkl
+*.pt
+*.pth
+*.onnx
+
+# Frontend
+node_modules/
+frontend/dist/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE
+.vscode/
+.idea/
+
+# System
+.DS_Store
+Thumbs.db
+.venv/
+**/.venv/
+__pycache__/
+*.py[cod]
+.env
