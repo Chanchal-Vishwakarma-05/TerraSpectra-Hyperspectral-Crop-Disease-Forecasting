@@ -2,6 +2,7 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pathlib import Path
 import shutil
+import rasterio
 
 router = APIRouter(prefix="/dataset", tags=["Dataset"])
 
@@ -28,4 +29,63 @@ async def upload_dataset(file: UploadFile = File(...)):
     return {
         "message": "Dataset uploaded successfully",
         "filename": file.filename
+    }
+
+@router.get("/validate/{filename}")
+
+@router.get("/validate/{filename}")
+def validate_dataset(filename: str):
+    safe_filename = Path(filename).name
+
+    if safe_filename != filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+
+    file_path = UPLOAD_DIR / safe_filename
+
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Dataset not found")
+
+    if file_path.stat().st_size == 0:
+        raise HTTPException(status_code=400, detail="Dataset file is empty")
+
+    extension = file_path.suffix.lower()
+
+    if extension not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Unsupported file format")
+
+    # TIFF metadata validation
+    if extension in {".tif", ".tiff"}:
+        try:
+            with rasterio.open(file_path) as dataset:
+                if dataset.width <= 0 or dataset.height <= 0 or dataset.count <= 0:
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Invalid TIFF dimensions or bands"
+                    )
+
+                return {
+                    "filename": safe_filename,
+                    "format": extension,
+                    "file_size_bytes": file_path.stat().st_size,
+                    "width": dataset.width,
+                    "height": dataset.height,
+                    "bands": dataset.count,
+                    "data_types": list(dataset.dtypes),
+                    "crs": str(dataset.crs) if dataset.crs else None,
+                    "status": "valid",
+                    "message": "TIFF metadata validation successful"
+                }
+
+        except rasterio.errors.RasterioError:
+            raise HTTPException(
+                status_code=400,
+                detail="Unable to read TIFF dataset"
+            )
+
+    return {
+        "filename": safe_filename,
+        "format": extension,
+        "file_size_bytes": file_path.stat().st_size,
+        "status": "uploaded",
+        "message": "Basic file validation successful; metadata validation not implemented for this format"
     }
