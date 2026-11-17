@@ -1,12 +1,6 @@
 
-import React, { useState } from "react";
+import React from "react";
 import "./LayerControl.css";
-
-const initialLayers = {
-  healthy: true,
-  stressed: true,
-  boundary: true,
-};
 
 const layerOptions = [
   {
@@ -29,20 +23,15 @@ const layerOptions = [
   },
 ];
 
-export default function LayerControl({ onLayerChange }) {
-  const [layers, setLayers] = useState(initialLayers);
-
+export default function LayerControl({ layers, onLayerChange }) {
   const toggleLayer = (id) => {
-    setLayers((previous) => {
-      const updated = {
-        ...previous,
-        [id]: !previous[id],
-      };
-
-      onLayerChange?.(updated);
-      return updated;
+    onLayerChange({
+      ...layers,
+      [id]: !layers[id],
     });
   };
+
+  const activeCount = Object.values(layers).filter(Boolean).length;
 
   return (
     <section className="layer-control">
@@ -51,8 +40,9 @@ export default function LayerControl({ onLayerChange }) {
           <h3>Map Layers</h3>
           <p>Control map visibility</p>
         </div>
+
         <span className="layer-count">
-          {Object.values(layers).filter(Boolean).length}/3
+          {activeCount}/3 Active
         </span>
       </div>
 
@@ -61,9 +51,7 @@ export default function LayerControl({ onLayerChange }) {
           <button
             key={layer.id}
             type="button"
-            className={`layer-item ${
-              layers[layer.id] ? "active" : ""
-            }`}
+            className={`layer-item ${layers[layer.id] ? "active" : ""}`}
             onClick={() => toggleLayer(layer.id)}
             aria-pressed={layers[layer.id]}
           >

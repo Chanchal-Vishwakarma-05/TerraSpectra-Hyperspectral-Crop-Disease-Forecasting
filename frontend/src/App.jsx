@@ -1,12 +1,15 @@
 
-import React from "react";
+import React, { useState } from "react";
+
 import FarmMap from "./components/FarmMap";
+import LayerControl from "./components/LayerControl";
+
 import {
   Activity,
   Leaf,
   MapPin,
   Satellite,
-  ShieldAlert
+  ShieldAlert,
 } from "lucide-react";
 
 import "./index.css";
@@ -20,19 +23,21 @@ function StatCard({ title, value, subtitle, icon: Icon }) {
       </div>
 
       <h2>{value}</h2>
-
       <p>{subtitle}</p>
     </div>
   );
 }
 
 export default function App() {
+  const [layers, setLayers] = useState({
+    healthy: true,
+    stressed: true,
+    boundary: true,
+  });
 
   return (
     <div className="dashboard">
-
       <aside className="sidebar">
-
         <div className="brand">
           <Satellite size={30} />
           <div>
@@ -53,11 +58,9 @@ export default function App() {
           <Activity size={17} />
           <span>System Operational</span>
         </div>
-
       </aside>
 
       <main className="main-content">
-
         <header className="topbar">
           <div>
             <h1>Crop Intelligence Dashboard</h1>
@@ -71,7 +74,6 @@ export default function App() {
         </header>
 
         <section className="stats-grid">
-
           <StatCard
             title="Total Farm Area"
             value="1,000 Acres"
@@ -99,35 +101,35 @@ export default function App() {
             subtitle="Illustrative demo metric"
             icon={ShieldAlert}
           />
-
         </section>
 
         <section className="map-section">
-
           <div className="section-heading">
             <div>
               <h2>Geospatial Farm Monitoring</h2>
-              <p>Satellite view and agricultural field boundaries</p>
+              <p>
+                Satellite imagery with interactive crop-condition overlays
+              </p>
             </div>
 
-            <span className="live-status">
-              DEMO MODE
-            </span>
+            <span className="live-status">DEMO MODE</span>
           </div>
+
+          <LayerControl
+            layers={layers}
+            onLayerChange={setLayers}
+          />
 
           <div className="map-container">
-            <FarmMap />
+            <FarmMap visibility={layers} />
           </div>
-
         </section>
 
         <footer>
           TerraSpectra | Hyperspectral Crop Intelligence
           <span>Week 1 Development</span>
         </footer>
-
       </main>
-
     </div>
   );
 }
