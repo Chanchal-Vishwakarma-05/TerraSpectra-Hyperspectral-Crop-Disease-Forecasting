@@ -31,7 +31,6 @@ async def upload_dataset(file: UploadFile = File(...)):
         "filename": file.filename
     }
 
-@router.get("/validate/{filename}")
 
 @router.get("/validate/{filename}")
 def validate_dataset(filename: str):
@@ -88,4 +87,42 @@ def validate_dataset(filename: str):
         "file_size_bytes": file_path.stat().st_size,
         "status": "uploaded",
         "message": "Basic file validation successful; metadata validation not implemented for this format"
+    }
+
+@router.get("/list")
+def list_datasets():
+    datasets = []
+
+    for file_path in UPLOAD_DIR.iterdir():
+        if file_path.is_file() and file_path.suffix.lower() in ALLOWED_EXTENSIONS:
+            datasets.append({
+                "filename": file_path.name,
+                "format": file_path.suffix.lower(),
+                "file_size_bytes": file_path.stat().st_size
+            })
+
+    return {
+        "total_datasets": len(datasets),
+        "datasets": datasets
+    }
+@router.delete("/delete/{filename}")
+def delete_dataset(filename: str):
+    safe_filename = Path(filename).name
+
+    if safe_filename != filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+
+    file_path = UPLOAD_DIR / safe_filename
+
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Dataset not found")
+
+    if file_path.suffix.lower() not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Unsupported file format")
+
+    file_path.unlink()
+
+    return {
+        "message": "Dataset deleted successfully",
+        "filename": safe_filename
     }
