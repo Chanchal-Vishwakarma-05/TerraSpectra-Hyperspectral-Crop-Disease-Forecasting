@@ -3,6 +3,7 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from pathlib import Path
 import shutil
 import rasterio
+from backend.services.data_service import process_tiff_dataset
 
 router = APIRouter(prefix="/dataset", tags=["Dataset"])
 
@@ -126,3 +127,21 @@ def delete_dataset(filename: str):
         "message": "Dataset deleted successfully",
         "filename": safe_filename
     }
+@router.post("/process/{filename}")
+def process_dataset(filename: str):
+
+    try:
+        result = process_tiff_dataset(filename)
+        return result
+
+    except FileNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+    except rasterio.errors.RasterioError:
+        raise HTTPException(
+            status_code=400,
+            detail="Unable to process TIFF dataset"
+        )
