@@ -1,24 +1,28 @@
 
-import React, { useMemo } from "react";
-import Map from "react-map-gl/mapbox";
+import { useMemo } from "react";
+
 import DeckGL from "@deck.gl/react";
 import { GeoJsonLayer } from "@deck.gl/layers";
+import Map from "react-map-gl/mapbox";
 
 import "mapbox-gl/dist/mapbox-gl.css";
+import "./FarmMap.css";
 
-const MAPBOX_TOKEN = import.meta.env.VITE_MAPBOX_TOKEN;
+const INITIAL_VIEW_STATE = {
+  longitude: 75.8575,
+  latitude: 22.725,
+  zoom: 14,
+  pitch: 0,
+  bearing: 0,
+};
 
-// Approximate demonstration farm near Indore.
-// These coordinates are illustrative, not surveyed boundaries.
-const farmBoundary = {
+// Illustrative farm boundary, not surveyed field geometry.
+const DEMO_BOUNDARY = {
   type: "FeatureCollection",
   features: [
     {
       type: "Feature",
-      properties: {
-        name: "TerraSpectra Demo Farm",
-        acreage: 1000,
-      },
+      properties: { name: "Demo Farm" },
       geometry: {
         type: "Polygon",
         coordinates: [[
@@ -33,127 +37,210 @@ const farmBoundary = {
   ],
 };
 
-// Synthetic healthy crop region
-const healthyRegion = {
+// Illustrative healthy crop regions.
+const DEMO_HEALTHY = {
   type: "FeatureCollection",
   features: [
     {
       type: "Feature",
-      properties: { condition: "Healthy" },
+      properties: { class: "healthy" },
       geometry: {
         type: "Polygon",
         coordinates: [[
           [75.8510, 22.7210],
-          [75.8580, 22.7210],
-          [75.8580, 22.7280],
+          [75.8570, 22.7210],
+          [75.8570, 22.7280],
           [75.8510, 22.7280],
           [75.8510, 22.7210],
         ]],
       },
     },
-  ],
-};
-
-// Synthetic crop-stress region
-const stressedRegion = {
-  type: "FeatureCollection",
-  features: [
     {
       type: "Feature",
-      properties: { condition: "Crop Stress" },
+      properties: { class: "healthy" },
       geometry: {
         type: "Polygon",
         coordinates: [[
-          [75.8590, 22.7220],
-          [75.8640, 22.7220],
-          [75.8640, 22.7270],
-          [75.8590, 22.7270],
-          [75.8590, 22.7220],
+          [75.8630, 22.7210],
+          [75.8645, 22.7210],
+          [75.8645, 22.7290],
+          [75.8630, 22.7290],
+          [75.8630, 22.7210],
         ]],
       },
     },
   ],
 };
 
-const initialViewState = {
-  longitude: 75.8575,
-  latitude: 22.7250,
-  zoom: 14,
-  pitch: 35,
-  bearing: 0,
+// Illustrative chemically stressed crop region.
+const DEMO_STRESSED = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      properties: { class: "stressed" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [[
+          [75.8580, 22.7230],
+          [75.8625, 22.7230],
+          [75.8625, 22.7275],
+          [75.8580, 22.7275],
+          [75.8580, 22.7230],
+        ]],
+      },
+    },
+  ],
 };
 
-export default function FarmMap({ visibility }) {
-  const layers = useMemo(() => {
-    const mapLayers = [];
+function getFeatureCollection(value, fallback) {
+  return value?.type === "FeatureCollection"
+    ? value
+    : fallback;
+}
 
-    // Farm boundary
-    if (visibility.boundary) {
-      mapLayers.push(
+export default function FarmMap({
+  visibleLayers = {},
+  analysisData = null,
+}) {
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+
+  // Real backend GeoJSON takes precedence over demo data.
+  const pipelineLayers = analysisData?.layers ?? {};
+
+  const boundaryData = getFeatureCollection(
+    pipelineLayers.boundary,
+    DEMO_BOUNDARY
+  );
+
+  const healthyData = getFeatureCollection(
+    pipelineLayers.healthy,
+    DEMO_HEALTHY
+  );
+
+  const stressedData = getFeatureCollection(
+    pipelineLayers.stressed,
+    DEMO_STRESSED
+  );
+
+  const showHealthy = visibleLayers.healthy !== false;
+  const showStressed = visibleLayers.stressed !== false;
+  const showBoundary = visibleLayers.boundary !== false;
+
+  const deckLayers = useMemo(() => {
+    const layers = [];
+
+    if (showHealthy) {
+      layers.push(
+        new GeoJsonLayer({
+          id: "healthy-regions",
+          data: healthyData,
+          pickable: false,
+          stroked: true,
+          filled: true,
+          getFillColor: [34, 197, 94, 75],
+          getLineColor: [34, 197, 94, 200],
+          getLineWidth: 2,
+          lineWidthMinPixels: 1,
+        })
+      );
+    }
+
+    if (showStressed) {
+      layers.push(
+        new GeoJsonLayer({
+          id: "stressed-regions",
+          data: stressedData,
+          pickable: false,
+          stroked: true,
+          filled: true,
+          getFillColor: [245, 158, 11, 110],
+          getLineColor: [245, 158, 11, 230],
+          getLineWidth: 2,
+          lineWidthMinPixels: 1,
+        })
+      );
+    }
+
+    if (showBoundary) {
+      layers.push(
         new GeoJsonLayer({
           id: "farm-boundary",
-          data: farmBoundary,
-          filled: true,
+          data: boundaryData,
+          pickable: false,
           stroked: true,
-          getFillColor: [56, 189, 248, 15],
+          filled: false,
           getLineColor: [56, 189, 248, 255],
-          getLineWidth: 4,
+          getLineWidth: 3,
           lineWidthMinPixels: 2,
-          pickable: true,
         })
       );
     }
 
-    // Healthy crop overlay
-    if (visibility.healthy) {
-      mapLayers.push(
-        new GeoJsonLayer({
-          id: "healthy-crops",
-          data: healthyRegion,
-          filled: true,
-          stroked: true,
-          getFillColor: [34, 197, 94, 110],
-          getLineColor: [34, 197, 94, 255],
-          getLineWidth: 2,
-          lineWidthMinPixels: 1,
-          pickable: true,
-        })
-      );
-    }
+    return layers;
+  }, [
+    healthyData,
+    stressedData,
+    boundaryData,
+    showHealthy,
+    showStressed,
+    showBoundary,
+  ]);
 
-    // Crop stress overlay
-    if (visibility.stressed) {
-      mapLayers.push(
-        new GeoJsonLayer({
-          id: "stressed-crops",
-          data: stressedRegion,
-          filled: true,
-          stroked: true,
-          getFillColor: [245, 158, 11, 150],
-          getLineColor: [245, 158, 11, 255],
-          getLineWidth: 2,
-          lineWidthMinPixels: 1,
-          pickable: true,
-        })
-      );
-    }
+  const suppliedCount = [
+    "healthy",
+    "stressed",
+    "boundary",
+  ].filter(
+    (key) =>
+      pipelineLayers[key]?.type === "FeatureCollection"
+  ).length;
 
-    return mapLayers;
-  }, [visibility]);
+  const isSynthetic =
+    analysisData?.metadata?.is_synthetic === true ||
+    analysisData?.metadata?.data_source === "synthetic";
+
+  const sourceLabel =
+    suppliedCount === 0
+      ? "Illustrative demo overlays"
+      : isSynthetic
+        ? "Synthetic pipeline GeoJSON"
+        : suppliedCount === 3
+          ? "Pipeline GeoJSON"
+          : "Mixed pipeline and demo layers";
+
+  if (!mapboxToken) {
+    return (
+      <div className="farm-map farm-map--missing-token">
+        <div>
+          <h3>Mapbox token required</h3>
+          <p>
+            Add VITE_MAPBOX_TOKEN to frontend/.env
+            and restart Vite.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ width: "100%", height: "100%" }}>
+    <div className="farm-map">
       <DeckGL
-        initialViewState={initialViewState}
+        initialViewState={INITIAL_VIEW_STATE}
         controller={true}
-        layers={layers}
+        layers={deckLayers}
+        style={{ width: "100%", height: "100%" }}
       >
         <Map
-          mapboxAccessToken={MAPBOX_TOKEN}
+          mapboxAccessToken={mapboxToken}
           mapStyle="mapbox://styles/mapbox/satellite-streets-v12"
-          reuseMaps
+          style={{ width: "100%", height: "100%" }}
         />
       </DeckGL>
+
+      <div className="farm-map__source">
+        {sourceLabel}
+      </div>
     </div>
   );
 }

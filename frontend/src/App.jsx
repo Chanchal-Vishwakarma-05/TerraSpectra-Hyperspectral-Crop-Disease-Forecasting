@@ -3,6 +3,7 @@ import React, { useState } from "react";
 
 import FarmMap from "./components/FarmMap";
 import LayerControl from "./components/LayerControl";
+import TerraSpectraMapPanel from "./components/TerraSpectraMapPanel";
 
 import {
   Activity,
@@ -121,7 +122,7 @@ export default function App() {
           />
 
           <div className="map-container">
-            <FarmMap visibility={layers} />
+            <TerraSpectraMapPanel visibility={layers} />
           </div>
         </section>
 

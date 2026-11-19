@@ -2,73 +2,88 @@
 import React from "react";
 import "./LayerControl.css";
 
-const layerOptions = [
+const DEFAULT_LAYERS = {
+  healthy: true,
+  stressed: true,
+  boundary: true,
+};
+
+const LAYER_OPTIONS = [
   {
     id: "healthy",
-    label: "Healthy Crops",
-    color: "#22c55e",
-    description: "Healthy vegetation regions",
+    label: "Healthy Vegetation",
+    description: "Healthy crop regions",
   },
   {
     id: "stressed",
-    label: "Crop Stress",
-    color: "#f59e0b",
+    label: "Chemical Stress",
     description: "Chemically stressed regions",
   },
   {
     id: "boundary",
     label: "Farm Boundary",
-    color: "#38bdf8",
-    description: "Farm geographical boundary",
+    description: "Geographical farm perimeter",
   },
 ];
 
-export default function LayerControl({ layers, onLayerChange }) {
+export default function LayerControl({
+  value = DEFAULT_LAYERS,
+  onChange,
+}) {
+  const layers = {
+    ...DEFAULT_LAYERS,
+    ...value,
+  };
+
+  const activeCount = Object.values(layers).filter(Boolean).length;
+
   const toggleLayer = (id) => {
-    onLayerChange({
+    onChange?.({
       ...layers,
       [id]: !layers[id],
     });
   };
 
-  const activeCount = Object.values(layers).filter(Boolean).length;
-
   return (
-    <section className="layer-control">
-      <div className="layer-header">
+    <section className="ts-layer-panel">
+      <div className="ts-layer-heading">
         <div>
           <h3>Map Layers</h3>
-          <p>Control map visibility</p>
+          <p>Control geospatial visibility</p>
         </div>
 
-        <span className="layer-count">
-          {activeCount}/3 Active
+        <span className="ts-layer-count">
+          {activeCount}/3
         </span>
       </div>
 
-      <div className="layer-list">
-        {layerOptions.map((layer) => (
-          <button
+      <div className="ts-layer-list">
+        {LAYER_OPTIONS.map((layer) => (
+          <label
             key={layer.id}
-            type="button"
-            className={`layer-item ${layers[layer.id] ? "active" : ""}`}
-            onClick={() => toggleLayer(layer.id)}
-            aria-pressed={layers[layer.id]}
+            className={`ts-layer-row ${
+              layers[layer.id] ? "active" : ""
+            }`}
           >
-            <span
-              className="layer-dot"
-              style={{ backgroundColor: layer.color }}
+            <input
+              type="checkbox"
+              checked={Boolean(layers[layer.id])}
+              onChange={() => toggleLayer(layer.id)}
             />
 
-            <span className="layer-info">
+            <span
+              className={`ts-layer-swatch ${layer.id}`}
+            />
+
+            <span className="ts-layer-info">
               <strong>{layer.label}</strong>
               <small>{layer.description}</small>
             </span>
 
-            <span className="layer-status">
+            <span className="ts-layer-state">
               {layers[layer.id] ? "ON" : "OFF"}
             </span>
-          </button>
+          </label>
         ))}
       </div>
     </section>

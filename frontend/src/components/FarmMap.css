@@ -1,0 +1,38 @@
+
+.farm-map {
+  position: relative;
+  width: 100%;
+  height: clamp(380px, 62vh, 660px);
+  min-height: 380px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: #0b1220;
+}
+
+.farm-map__source {
+  position: absolute;
+  z-index: 2;
+  bottom: 12px;
+  left: 12px;
+  padding: 8px 11px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.9);
+  color: #e2e8f0;
+  font-size: 11px;
+  pointer-events: none;
+}
+
+.farm-map--missing-token {
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  border: 1px dashed #475569;
+  color: #f8fafc;
+  text-align: center;
+}
+
+.farm-map--missing-token p {
+  color: #94a3b8;
+  font-size: 13px;
+}
