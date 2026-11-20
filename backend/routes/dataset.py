@@ -1,9 +1,7 @@
-
+from backend.services.data_service import update_dataset_status
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pathlib import Path
 import shutil
-import rasterio
-from backend.services.data_service import process_tiff_dataset
 
 router = APIRouter(prefix="/dataset", tags=["Dataset"])
 
@@ -12,24 +10,23 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 ALLOWED_EXTENSIONS = {".tif", ".tiff", ".h5", ".hdf5", ".nc"}
 
+
 @router.post("/upload")
 async def upload_dataset(file: UploadFile = File(...)):
-    extension = Path(file.filename).suffix.lower()
+    safe_filename = Path(file.filename).name
+    extension = Path(safe_filename).suffix.lower()
 
     if extension not in ALLOWED_EXTENSIONS:
-        raise HTTPException(
-            status_code=400,
-            detail="Unsupported file format"
-        )
+        raise HTTPException(status_code=400, detail="Unsupported file format")
 
-    file_path = UPLOAD_DIR / Path(file.filename).name
+    file_path = UPLOAD_DIR / safe_filename
 
     with file_path.open("wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
     return {
         "message": "Dataset uploaded successfully",
-        "filename": file.filename
+        "filename": safe_filename
     }
 
 
@@ -53,42 +50,14 @@ def validate_dataset(filename: str):
     if extension not in ALLOWED_EXTENSIONS:
         raise HTTPException(status_code=400, detail="Unsupported file format")
 
-    # TIFF metadata validation
-    if extension in {".tif", ".tiff"}:
-        try:
-            with rasterio.open(file_path) as dataset:
-                if dataset.width <= 0 or dataset.height <= 0 or dataset.count <= 0:
-                    raise HTTPException(
-                        status_code=400,
-                        detail="Invalid TIFF dimensions or bands"
-                    )
-
-                return {
-                    "filename": safe_filename,
-                    "format": extension,
-                    "file_size_bytes": file_path.stat().st_size,
-                    "width": dataset.width,
-                    "height": dataset.height,
-                    "bands": dataset.count,
-                    "data_types": list(dataset.dtypes),
-                    "crs": str(dataset.crs) if dataset.crs else None,
-                    "status": "valid",
-                    "message": "TIFF metadata validation successful"
-                }
-
-        except rasterio.errors.RasterioError:
-            raise HTTPException(
-                status_code=400,
-                detail="Unable to read TIFF dataset"
-            )
-
     return {
         "filename": safe_filename,
         "format": extension,
         "file_size_bytes": file_path.stat().st_size,
         "status": "uploaded",
-        "message": "Basic file validation successful; metadata validation not implemented for this format"
+        "message": "Basic file validation successful"
     }
+
 
 @router.get("/list")
 def list_datasets():
@@ -106,6 +75,8 @@ def list_datasets():
         "total_datasets": len(datasets),
         "datasets": datasets
     }
+
+
 @router.delete("/delete/{filename}")
 def delete_dataset(filename: str):
     safe_filename = Path(filename).name
@@ -127,21 +98,26 @@ def delete_dataset(filename: str):
         "message": "Dataset deleted successfully",
         "filename": safe_filename
     }
-@router.post("/process/{filename}")
-def process_dataset(filename: str):
+@router.post("/status/{filename}")
+def mark_dataset_processed(filename: str):
 
-    try:
-        result = process_tiff_dataset(filename)
-        return result
+    safe_filename = Path(filename).name
 
-    except FileNotFoundError as e:
-        raise HTTPException(status_code=404, detail=str(e))
+    if safe_filename != filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
 
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+    file_path = UPLOAD_DIR / safe_filename
 
-    except rasterio.errors.RasterioError:
-        raise HTTPException(
-            status_code=400,
-            detail="Unable to process TIFF dataset"
-        )
+    if not file_path.exists() or not file_path.is_file():
+        raise HTTPException(status_code=404, detail="Dataset not found")
+
+    if file_path.suffix.lower() not in ALLOWED_EXTENSIONS:
+        raise HTTPException(status_code=400, detail="Unsupported file format")
+
+    update_dataset_status(safe_filename, "processed")
+
+    return {
+        "filename": safe_filename,
+        "status": "processed",
+        "message": "Dataset status updated successfully"
+    }
