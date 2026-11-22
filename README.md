@@ -26,3 +26,33 @@ detection and forecasting.
 
 ## Status
 Project setup and development started.
+## System Architecture
+
+The project is organized into three major components:
+
+- **Backend:** Handles API operations and dataset management.
+- **Frontend:** Provides an interactive interface for users.
+- **ML Engine:** Handles data preprocessing, feature extraction, model training, and prediction.
+
+## Dataset Management
+
+The backend supports:
+- Hyperspectral dataset upload.
+- Basic file validation.
+- Dataset listing and deletion.
+- Dataset status tracking.
+- Dashboard statistics.
+
+## Expected Outcomes
+
+- Improved analysis of hyperspectral crop data.
+- Identification of spectral patterns associated with crop diseases.
+- Development of machine learning models for disease forecasting.
+- Support for data-driven agricultural decisions.
+
+## Future Enhancements
+
+- Hyperspectral image visualization.
+- Advanced spectral data preprocessing.
+- Model training and performance evaluation.
+- Crop disease prediction dashboard.
