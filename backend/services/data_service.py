@@ -44,3 +44,13 @@ def get_dashboard_counts():
         "processed_datasets": processed,
         "pending_datasets": total - processed
     }
+def remove_dataset_status(filename: str):
+    statuses = get_dataset_status()
+
+    safe_filename = Path(filename).name
+
+    if safe_filename in statuses:
+        del statuses[safe_filename]
+
+    with STATUS_FILE.open("w") as file:
+        json.dump(statuses, file, indent=4)
