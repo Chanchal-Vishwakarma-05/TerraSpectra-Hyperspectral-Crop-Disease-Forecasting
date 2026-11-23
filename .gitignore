@@ -30,9 +30,14 @@ frontend/dist/
 # System
 .DS_Store
 Thumbs.db
-.venv/
-**/.venv/
+
+# Logs
+*.log
 __pycache__/
 *.py[cod]
+node_modules/
+.venv/
+venv/
 .env
+uploads/
 dataset_status.json

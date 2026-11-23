@@ -1,16 +1,25 @@
 
+<<<<<<< HEAD
 import React, { useState } from "react";
 
 import FarmMap from "./components/FarmMap";
 import LayerControl from "./components/LayerControl";
 import TerraSpectraMapPanel from "./components/TerraSpectraMapPanel";
 
+=======
+import React from "react";
+import FarmMap from "./components/FarmMap";
+>>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
 import {
   Activity,
   Leaf,
   MapPin,
   Satellite,
+<<<<<<< HEAD
   ShieldAlert,
+=======
+  ShieldAlert
+>>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
 } from "lucide-react";
 
 import "./index.css";
@@ -24,12 +33,17 @@ function StatCard({ title, value, subtitle, icon: Icon }) {
       </div>
 
       <h2>{value}</h2>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
       <p>{subtitle}</p>
     </div>
   );
 }
 
 export default function App() {
+<<<<<<< HEAD
   const [layers, setLayers] = useState({
     healthy: true,
     stressed: true,
@@ -39,6 +53,14 @@ export default function App() {
   return (
     <div className="dashboard">
       <aside className="sidebar">
+=======
+
+  return (
+    <div className="dashboard">
+
+      <aside className="sidebar">
+
+>>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
         <div className="brand">
           <Satellite size={30} />
           <div>
@@ -59,9 +81,17 @@ export default function App() {
           <Activity size={17} />
           <span>System Operational</span>
         </div>
+<<<<<<< HEAD
       </aside>
 
       <main className="main-content">
+=======
+
+      </aside>
+
+      <main className="main-content">
+
+>>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
         <header className="topbar">
           <div>
             <h1>Crop Intelligence Dashboard</h1>
@@ -75,6 +105,10 @@ export default function App() {
         </header>
 
         <section className="stats-grid">
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
           <StatCard
             title="Total Farm Area"
             value="1,000 Acres"
@@ -102,6 +136,7 @@ export default function App() {
             subtitle="Illustrative demo metric"
             icon={ShieldAlert}
           />
+<<<<<<< HEAD
         </section>
 
         <section className="map-section">
@@ -124,13 +159,41 @@ export default function App() {
           <div className="map-container">
             <TerraSpectraMapPanel visibility={layers} />
           </div>
+=======
+
+        </section>
+
+        <section className="map-section">
+
+          <div className="section-heading">
+            <div>
+              <h2>Geospatial Farm Monitoring</h2>
+              <p>Satellite view and agricultural field boundaries</p>
+            </div>
+
+            <span className="live-status">
+              DEMO MODE
+            </span>
+          </div>
+
+          <div className="map-container">
+            <FarmMap />
+          </div>
+
+>>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
         </section>
 
         <footer>
           TerraSpectra | Hyperspectral Crop Intelligence
           <span>Week 1 Development</span>
         </footer>
+<<<<<<< HEAD
       </main>
+=======
+
+      </main>
+
+>>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
     </div>
   );
 }
