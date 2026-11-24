@@ -1,13 +1,15 @@
-from backend.services.data_service import update_dataset_status
-from backend.services.data_service import remove_dataset_status
+from backend.services.data_service import (
+    UPLOAD_DIR,
+    update_dataset_status,
+    remove_dataset_status,
+    get_dataset_status,
+)
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pathlib import Path
 import shutil
 
 router = APIRouter(prefix="/dataset", tags=["Dataset"])
 
-UPLOAD_DIR = Path("uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
 
 ALLOWED_EXTENSIONS = {".tif", ".tiff", ".h5", ".hdf5", ".nc"}
 

@@ -1,25 +1,16 @@
 
-<<<<<<< HEAD
-import React, { useState } from "react";
-
+import React, { useEffect, useState } from "react";
+import { getDashboardStats } from "./services/api";
 import FarmMap from "./components/FarmMap";
 import LayerControl from "./components/LayerControl";
 import TerraSpectraMapPanel from "./components/TerraSpectraMapPanel";
 
-=======
-import React from "react";
-import FarmMap from "./components/FarmMap";
->>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
 import {
   Activity,
   Leaf,
   MapPin,
   Satellite,
-<<<<<<< HEAD
   ShieldAlert,
-=======
-  ShieldAlert
->>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
 } from "lucide-react";
 
 import "./index.css";
@@ -33,34 +24,44 @@ function StatCard({ title, value, subtitle, icon: Icon }) {
       </div>
 
       <h2>{value}</h2>
-<<<<<<< HEAD
-=======
-
->>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
       <p>{subtitle}</p>
     </div>
   );
 }
 
 export default function App() {
-<<<<<<< HEAD
   const [layers, setLayers] = useState({
-    healthy: true,
-    stressed: true,
-    boundary: true,
-  });
+  healthy: true,
+  stressed: true,
+  boundary: true,
+});
+
+const [stats, setStats] = useState(null);
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState("");
+
+useEffect(() => {
+  async function loadDashboard() {
+    try {
+      setLoading(true);
+      setError("");
+
+      const data = await getDashboardStats();
+      setStats(data);
+    } catch (err) {
+      console.error("Dashboard API error:", err);
+      setError(err.message || "Unable to load dashboard data");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  loadDashboard();
+}, []);
 
   return (
     <div className="dashboard">
       <aside className="sidebar">
-=======
-
-  return (
-    <div className="dashboard">
-
-      <aside className="sidebar">
-
->>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
         <div className="brand">
           <Satellite size={30} />
           <div>
@@ -81,17 +82,9 @@ export default function App() {
           <Activity size={17} />
           <span>System Operational</span>
         </div>
-<<<<<<< HEAD
       </aside>
 
       <main className="main-content">
-=======
-
-      </aside>
-
-      <main className="main-content">
-
->>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
         <header className="topbar">
           <div>
             <h1>Crop Intelligence Dashboard</h1>
@@ -104,40 +97,51 @@ export default function App() {
           </div>
         </header>
 
+        
         <section className="stats-grid">
-<<<<<<< HEAD
-=======
-
->>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
           <StatCard
-            title="Total Farm Area"
-            value="1,000 Acres"
-            subtitle="Demo monitoring area"
+            title="Total Datasets"
+            value={
+              loading ? "Loading..." : stats?.total_datasets ?? 0
+            }
+            subtitle="Uploaded hyperspectral datasets"
             icon={Leaf}
           />
 
           <StatCard
-            title="Spectral Bands"
-            value="200+"
-            subtitle="Hyperspectral imaging"
+            title="Processed Datasets"
+            value={
+              loading ? "Loading..." : stats?.processed_datasets ?? 0
+            }
+            subtitle="Successfully marked processed"
             icon={Satellite}
           />
 
           <StatCard
-            title="Healthy Area"
-            value="85.5%"
-            subtitle="Illustrative demo metric"
+            title="Pending Datasets"
+            value={
+              loading ? "Loading..." : stats?.pending_datasets ?? 0
+            }
+            subtitle="Awaiting processing"
             icon={Activity}
           />
 
           <StatCard
-            title="At-Risk Area"
-            value="145 Acres"
-            subtitle="Illustrative demo metric"
+            title="Total Predictions"
+            value={
+              loading ? "Loading..." : stats?.total_predictions ?? 0
+            }
+            subtitle="Model prediction records"
             icon={ShieldAlert}
           />
-<<<<<<< HEAD
         </section>
+
+        {error && (
+          <div className="api-error">
+            Backend connection failed: {error}
+          </div>
+        )}
+
 
         <section className="map-section">
           <div className="section-heading">
@@ -159,41 +163,13 @@ export default function App() {
           <div className="map-container">
             <TerraSpectraMapPanel visibility={layers} />
           </div>
-=======
-
-        </section>
-
-        <section className="map-section">
-
-          <div className="section-heading">
-            <div>
-              <h2>Geospatial Farm Monitoring</h2>
-              <p>Satellite view and agricultural field boundaries</p>
-            </div>
-
-            <span className="live-status">
-              DEMO MODE
-            </span>
-          </div>
-
-          <div className="map-container">
-            <FarmMap />
-          </div>
-
->>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
         </section>
 
         <footer>
           TerraSpectra | Hyperspectral Crop Intelligence
           <span>Week 1 Development</span>
         </footer>
-<<<<<<< HEAD
       </main>
-=======
-
-      </main>
-
->>>>>>> 1279ab78cf83b62a2684cf777454795825ad026c
     </div>
   );
 }

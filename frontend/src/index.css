@@ -221,4 +221,13 @@ footer {
   .map-container {
     height: 360px;
   }
+  .api-error {
+    margin: 12px 0;
+    padding: 12px 16px;
+    border: 1px solid #ef4444;
+    border-radius: 8px;
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    font-size: 13px;
+  }
 }
